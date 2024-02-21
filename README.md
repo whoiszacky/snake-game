@@ -1,3 +1,124 @@
+### NB:  
+ 
+```js
+/*
+This was the less optimal approach I took
+before following the blog tutorial.
+*/
+import React, { useState, useEffect } from 'react';
+
+const numRows = 20;
+const numCols = 20;
+
+const App = () => {
+  const [snake, setSnake] = useState([{ row: 10, col: 10 }]);
+  const [food, setFood] = useState({ row: Math.floor(Math.random() * numRows), col: Math.floor(Math.random() * numCols) });
+  const [direction, setDirection] = useState('RIGHT');
+  const [gameOver, setGameOver] = useState(false);
+
+  const handleKeyPress = (e) => {
+    switch (e.key) {
+      case 'ArrowUp':
+        setDirection('UP');
+        break;
+      case 'ArrowDown':
+        setDirection('DOWN');
+        break;
+      case 'ArrowLeft':
+        setDirection('LEFT');
+        break;
+      case 'ArrowRight':
+        setDirection('RIGHT');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const moveSnake = () => {
+    const head = snake[0];
+    let newHead;
+
+    switch (direction) {
+      case 'UP':
+        newHead = { row: head.row - 1, col: head.col };
+        break;
+      case 'DOWN':
+        newHead = { row: head.row + 1, col: head.col };
+        break;
+      case 'LEFT':
+        newHead = { row: head.row, col: head.col - 1 };
+        break;
+      case 'RIGHT':
+        newHead = { row: head.row, col: head.col + 1 };
+        break;
+      default:
+        break;
+    }
+
+    if (newHead.row < 0 || newHead.row >= numRows || newHead.col < 0 || newHead.col >= numCols || snake.some(segment => segment.row === newHead.row && segment.col === newHead.col)) {
+      setGameOver(true);
+      return;
+    }
+
+    const newSnake = [newHead, ...snake];
+    if (newHead.row === food.row && newHead.col === food.col) {
+      setFood({ row: Math.floor(Math.random() * numRows), col: Math.floor(Math.random() * numCols) });
+    } else {
+      newSnake.pop();
+    }
+
+    setSnake(newSnake);
+  };
+
+  const restartGame = () => {
+    setSnake([{ row: 10, col: 10 }]);
+    setFood({ row: Math.floor(Math.random() * numRows), col: Math.floor(Math.random() * numCols) });
+    setDirection('RIGHT');
+    setGameOver(false);
+  };
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      moveSnake();
+    }, 100);
+
+    document.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [snake, direction, food, gameOver]);
+
+  if (gameOver) {
+    return (
+      <div>
+        Game Over!
+        <button onClick={restartGame}>Restart</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {
+        Array.from({ length: numRows }, (_, rowIndex) => (
+          <div key={rowIndex} style={{ display: 'flex' }}>
+            {
+              Array.from({ length: numCols }, (_, colIndex) => (
+                <div key={colIndex} style={{ width: '20px', height: '20px', backgroundColor: snake.some(segment => segment.row === rowIndex && segment.col === colIndex) ? 'black' : (food.row === rowIndex && food.col === colIndex ? 'red' : 'white') }} />
+              ))
+            }
+          </div>
+        ))
+      }
+    </div>
+  );
+};
+
+export default App;
+```
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
